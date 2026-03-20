@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI4B Work Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #111318;
+    --bg3: #181c24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f2f7;
+    --muted: #8a90a0;
+    --accent: #00d4aa;
+    --accent2: #0099ff;
+    --accent3: #ff6b35;
+    --gold: #f5c842;
+    --card-glow: rgba(0,212,170,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 14px; color: #000;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.3px; }
+  .logo-text span { color: var(--accent); }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.25);
+    font-size: 12px; color: var(--accent); font-weight: 500;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 73px); }
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; }
+  .nav-section { padding: 0 16px; margin-bottom: 8px; }
+  .nav-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+    color: var(--muted); text-transform: uppercase;
+    padding: 0 12px; margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; color: var(--muted);
+    transition: all 0.15s; border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(0,212,170,0.08); border-color: rgba(0,212,170,0.2); color: var(--accent); }
+  .nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .nav-divider { height: 1px; background: var(--border); margin: 16px 16px; }
+  .main { padding: 32px; overflow-y: auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-subtitle { font-size: 14px; color: var(--muted); }
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.blue { color: var(--accent2); }
+  .stat-value.orange { color: var(--accent3); }
+  .stat-value.gold { color: var(--gold); }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .agents-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; margin-bottom: 28px; }
+  .agent-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .agent-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--card-accent), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .agent-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .agent-card:hover::before { opacity: 1; }
+  .agent-card.accent-green { --card-accent: var(--accent); }
+  .agent-card.accent-blue { --card-accent: var(--accent2); }
+  .agent-card.accent-orange { --card-accent: var(--accent3); }
+  .agent-card.accent-gold { --card-accent: var(--gold); }
+  .agent-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .agent-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .agent-icon.green { background: rgba(0,212,170,0.12); }
+  .agent-icon.blue { background: rgba(0,153,255,0.12); }
+  .agent-icon.orange { background: rgba(255,107,53,0.12); }
+  .agent-icon.gold { background: rgba(245,200,66,0.12); }
+  .agent-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+  .badge-ready { background: rgba(0,212,170,0.1); color: var(--accent); border: 1px solid rgba(0,212,170,0.2); }
+  .badge-active { background: rgba(0,153,255,0.1); color: var(--accent2); border: 1px solid rgba(0,153,255,0.2); }
+  .badge-setup { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.2); }
+  .agent-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .agent-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+  .agent-tasks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .task-tag { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .launch-btn {
+    width: 100%; margin-top: 18px; padding: 10px; border-radius: 8px;
+    border: 1px solid var(--border2); background: transparent; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .launch-btn:hover { background: rgba(255,255,255,0.05); }
+  .launch-btn.green:hover { border-color: var(--accent); color: var(--accent); }
+  .launch-btn.blue:hover { border-color: var(--accent2); color: var(--accent2); }
+  .launch-btn.orange:hover { border-color: var(--accent3); color: var(--accent3); }
+  .launch-btn.gold:hover { border-color: var(--gold); color: var(--gold); }
+  .roadmap { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .roadmap-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 20px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .phase { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .phase:last-child { margin-bottom: 0; }
+  .phase-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; font-family: 'Syne', sans-serif; }
+  .phase-num.done { background: rgba(0,212,170,0.15); color: var(--accent); border: 1px solid rgba(0,212,170,0.3); }
+  .phase-num.active { background: rgba(0,153,255,0.15); color: var(--accent2); border: 1px solid rgba(0,153,255,0.3); }
+  .phase-num.pending { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .phase-info { flex: 1; }
+  .phase-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .phase-detail { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .workspace { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+  .workspace-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--bg2); }
+  .workspace-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .workspace-body { padding: 20px; }
+  .chat-messages { min-height: 280px; max-height: 380px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .message { display: flex; gap: 10px; align-items: flex-start; }
+  .message.user { flex-direction: row-reverse; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; font-family: 'Syne', sans-serif; }
+  .msg-avatar.agent { background: rgba(0,212,170,0.15); color: var(--accent); }
+  .msg-avatar.user-av { background: rgba(0,153,255,0.15); color: var(--accent2); }
+  .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 10px; font-size: 13px; line-height: 1.6; }
+  .message.agent .msg-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+  .message.user .msg-bubble { background: rgba(0,153,255,0.1); border: 1px solid rgba(0,153,255,0.2); color: var(--text); }
+  .chat-input-row { display: flex; gap: 10px; }
+  .chat-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+  .send-btn { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .send-btn:hover { opacity: 0.85; }
+  .quick-actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+  .qa-btn { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.15s; text-align: left; line-height: 1.4; }
+  .qa-btn:hover { border-color: var(--accent); background: rgba(0,212,170,0.05); color: var(--accent); }
+  .qa-icon { font-size: 16px; margin-bottom: 6px; display: block; }
+  .kb-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+  .kb-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.15s; }
+  .kb-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .kb-level { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .kb-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .kb-count { font-size: 12px; color: var(--muted); }
+  .kb-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+  .kb-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+  .crm-tools { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 24px; }
+  .crm-tool { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.15s; }
+  .crm-tool:hover { border-color: var(--border2); }
+  .crm-tool-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .crm-tool-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+  .crm-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent2); text-decoration: none; transition: opacity 0.15s; }
+  .crm-link:hover { opacity: 0.7; }
+  .content-form { background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .form-input, .form-select, .form-textarea { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select option { background: var(--bg2); }
+  .generate-btn { padding: 12px 28px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .generate-btn:hover { opacity: 0.85; }
+  .output-area { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; color: var(--text); min-height: 120px; white-space: pre-wrap; margin-top: 16px; }
+  .output-area.loading { color: var(--muted); font-style: italic; }
+  .typing { display: inline-flex; gap: 4px; align-items: center; padding: 4px 0; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-6px);opacity:1} }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .agents-grid { grid-template-columns: 1fr; }
+    .kb-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">A4B</div>
+    <div class="logo-text">AI4B <span>Work Hub</span></div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    52 Lessons Loaded
+  </div>
+</div>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="showPanel('dashboard',this)"><div class="nav-icon">⬡</div> Dashboard</div>
+      <div class="nav-item" onclick="showPanel('agents',this)"><div class="nav-icon">◈</div> AI Agents</div>
+      <div class="nav-item" onclick="showPanel('knowledge',this)"><div class="nav-icon">◉</div> Knowledge Base</div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Work</div>
+      <div class="nav-item" onclick="showPanel('ghl',this)"><div class="nav-icon">▣</div> GHL / CRM</div>
+      <div class="nav-item" onclick="showPanel('content',this)"><div class="nav-icon">✦</div> Content</div>
+      <div class="nav-item" onclick="showPanel('email',this)"><div class="nav-icon">◎</div> Email Sequences</div>
+      <div class="nav-item" onclick="showPanel('closebot',this)"><div class="nav-icon">◈</div> CloseBot</div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Resources</div>
+      <div class="nav-item" onclick="window.open('https://crm.aiforbusiness.com/v2/location/vyIwWsqa2Kwb1lN0Mg8Z/dashboard','_blank')"><div class="nav-icon">↗</div> GHL Dashboard</div>
+      <div class="nav-item" onclick="window.open('https://aiforbusiness.circle.so/feed','_blank')"><div class="nav-icon">↗</div> Circle Community</div>
+      <div class="nav-item" onclick="window.open('https://help.aiforbusiness.com/','_blank')"><div class="nav-icon">↗</div> Help Library</div>
+    </div>
+  </nav>
+  <main class="main">
+    <div class="panel active" id="panel-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Your AI4B system overview — 52 lessons loaded, ready to deploy</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Lessons Loaded</div><div class="stat-value green">52</div><div class="stat-sub">of 72 total (LVL 3-7 pending)</div></div>
+        <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value blue">4</div><div class="stat-sub">GHL, Content, Email, CloseBot</div></div>
+        <div class="stat-card"><div class="stat-label">Phases Complete</div><div class="stat-value orange">1</div><div class="stat-sub">Foundation done</div></div>
+        <div class="stat-card"><div class="stat-label">Next Milestone</div><div class="stat-value gold">LVL 3</div><div class="stat-sub">~20 lessons pending</div></div>
+      </div>
+      <div class="agents-grid">
+        <div class="agent-card accent-green" onclick="showPanel('ghl',document.querySelector('[onclick*=ghl]'))">
+          <div class="agent-header"><div class="agent-icon green">▣</div><div class="agent-badge badge-ready">Ready</div></div>
+          <div class="agent-name">GHL / CRM Agent</div>
+          <div class="agent-desc">Manages your GoHighLevel CRM, contacts, pipelines, and automation workflows based on AI4B training.</div>
+          <div class="agent-tasks"><span class="task-tag">Contacts</span><span class="task-tag">Pipelines</span><span class="task-tag">Automations</span><span class="task-tag">Funnels</span></div>
+          <button class="launch-btn green">Launch Agent →</button>
+        </div>
+        <div class="agent-card accent-blue" onclick="showPanel('content',document.querySelector('[onclick*=content]'))">
+          <div class="agent-header"><div class="agent-icon blue">✦</div><div class="agent-badge badge-active">Active</div></div>
+          <div class="agent-name">Content Agent</div>
+          <div class="agent-desc">Creates social posts, Facebook content, and copy using AI4B prompting frameworks and your brand voice.</div>
+          <div class="agent-tasks"><span class="task-tag">Facebook</span><span class="task-tag">LinkedIn</span><span class="task-tag">Copy</span><span class="task-tag">AIDA</span></div>
+          <button class="launch-btn blue">Launch Agent →</button>
+        </div>
+        <div class="agent-card accent-orange" onclick="showPanel('email',document.querySelector('[onclick*=email]'))">
+          <div class="agent-header"><div class="agent-icon orange">◎</div><div class="agent-badge badge-ready">Ready</div></div>
+          <div class="agent-name">Email Sequence Agent</div>
+          <div class="agent-desc">Builds automated email follow-up sequences, nurture campaigns, and broadcast emails tied to your GHL funnels.</div>
+          <div class="agent-tasks"><span class="task-tag">Welcome Seq</span><span class="task-tag">Nurture</span><span class="task-tag">Follow-up</span><span class="task-tag">Broadcast</span></div>
+          <button class="launch-btn orange">Launch Agent →</button>
+        </div>
+        <div class="agent-card accent-gold" onclick="showPanel('closebot',document.querySelector('[onclick*=closebot]'))">
+          <div class="agent-header"><div class="agent-icon gold">◈</div><div class="agent-badge badge-setup">Setup</div></div>
+          <div class="agent-name">CloseBot Agent</div>
+          <div class="agent-desc">Writes and optimizes CloseBot prompts and objectives using the AI4B chatbot frameworks to qualify leads 24/7.</div>
+          <div class="agent-tasks"><span class="task-tag">Prompts</span><span class="task-tag">Objectives</span><span class="task-tag">Qualification</span><span class="task-tag">Testing</span></div>
+          <button class="launch-btn gold">Launch Agent →</button>
+        </div>
+      </div>
+      <div class="roadmap">
+        <div class="roadmap-title">Deployment Roadmap</div>
+        <div class="phase"><div class="phase-num done">1</div><div class="phase-info"><div class="phase-name">Foundation Setup ✓</div><div class="phase-detail">Circle profile, GHL CRM active, Closebot access, notifications configured, calls scheduled</div></div></div>
+        <div class="phase"><div class="phase-num active">2</div><div class="phase-info"><div class="phase-name">Skills Training — In Progress</div><div class="phase-detail">LVL 1 AI Prompting ✓ · LVL 2 Business Research ✓ · LVL 3-7 (~20 lessons) pending extraction</div></div></div>
+        <div class="phase"><div class="phase-num pending">3</div><div class="phase-info"><div class="phase-name">Systems Build-Out</div><div class="phase-detail">Deploy funnels (LVL 8) · Launch lead gen (LVL 9) · Hire VA (LVL 10) · Deploy CloseBot (LVL 11) · Build apps (LVL 12)</div></div></div>
+        <div class="phase"><div class="phase-num pending">4</div><div class="phase-info"><div class="phase-name">Growth & Scaling</div><div class="phase-detail">Beehiiv newsletter · Affiliate links · Paid campaigns · Ongoing optimization</div></div></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-agents">
+      <div class="page-header"><div class="page-title">AI Agents</div><div class="page-subtitle">Select an agent to start working</div></div>
+      <div class="agents-grid">
+        <div class="agent-card accent-green" onclick="showPanel('ghl',document.querySelector('[onclick*=ghl]'))"><div class="agent-header"><div class="agent-icon green">▣</div><div class="agent-badge badge-ready">Ready</div></div><div class="agent-name">GHL / CRM Agent</div><div class="agent-desc">Full GoHighLevel management.</div><button class="launch-btn green">Open →</button></div>
+        <div class="agent-card accent-blue" onclick="showPanel('content',document.querySelector('[onclick*=content]'))"><div class="agent-header"><div class="agent-icon blue">✦</div><div class="agent-badge badge-active">Active</div></div><div class="agent-name">Content Agent</div><div class="agent-desc">Social posts, copy, and content.</div><button class="launch-btn blue">Open →</button></div>
+        <div class="agent-card accent-orange" onclick="showPanel('email',document.querySelector('[onclick*=email]'))"><div class="agent-header"><div class="agent-icon orange">◎</div><div class="agent-badge badge-ready">Ready</div></div><div class="agent-name">Email Sequence Agent</div><div class="agent-desc">Automated sequences and broadcasts.</div><button class="launch-btn orange">Open →</button></div>
+        <div class="agent-card accent-gold" onclick="showPanel('closebot',document.querySelector('[onclick*=closebot]'))"><div class="agent-header"><div class="agent-icon gold">◈</div><div class="agent-badge badge-setup">Setup</div></div><div class="agent-name">CloseBot Agent</div><div class="agent-desc">CloseBot prompts and optimization.</div><button class="launch-btn gold">Open →</button></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-knowledge">
+      <div class="page-header"><div class="page-title">Knowledge Base</div><div class="page-subtitle">All extracted AI4B course content — 52 lessons across 5 courses</div></div>
+      <div class="kb-grid">
+        <div class="kb-card"><div class="kb-level">Onboarding</div><div class="kb-title">PROs Start Here</div><div class="kb-count">16 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 0</div><div class="kb-title">Come Out Ahead</div><div class="kb-count">2 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 1</div><div class="kb-title">AI Prompting</div><div class="kb-count">6 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 2</div><div class="kb-title">Business Research with AI</div><div class="kb-count">4 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card" style="border-color:rgba(245,200,66,0.2)"><div class="kb-level" style="color:var(--gold)">Levels 3-7</div><div class="kb-title">PRO Modules 3-7</div><div class="kb-count" style="color:var(--gold)">~20 lessons · Pending</div><div class="kb-bar"><div class="kb-fill" style="width:15%;background:var(--gold)"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 8</div><div class="kb-title">AI Funnel Building</div><div class="kb-count">4 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 9</div><div class="kb-title">AI Lead Generation</div><div class="kb-count">4 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 10</div><div class="kb-title">Virtual Assistants</div><div class="kb-count">3 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 11</div><div class="kb-title">AI Chat Bots</div><div class="kb-count">3 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Level 12</div><div class="kb-title">App Development with AI</div><div class="kb-count">3 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+        <div class="kb-card"><div class="kb-level">Starter Kit</div><div class="kb-title">AI Starter Kit V1</div><div class="kb-count">8 lessons · Complete</div><div class="kb-bar"><div class="kb-fill" style="width:100%"></div></div></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-ghl">
+      <div class="page-header"><div class="page-title">GHL / CRM Agent</div><div class="page-subtitle">GoHighLevel management — Location ID: vyIwWsqa2Kwb1lN0Mg8Z</div></div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="ghlChat('Walk me through adding a new contact to GHL and setting up their pipeline stage')"><span class="qa-icon">+</span>Add Contact</button>
+        <button class="qa-btn" onclick="ghlChat('How do I set up an automation workflow in GHL for new leads coming in from Facebook?')"><span class="qa-icon">⚡</span>Build Automation</button>
+        <button class="qa-btn" onclick="ghlChat('Walk me through building a lead capture funnel in GoHighLevel from scratch')"><span class="qa-icon">▽</span>Build a Funnel</button>
+        <button class="qa-btn" onclick="ghlChat('How do I set up a pipeline in GHL and move contacts through stages?')"><span class="qa-icon">→</span>Manage Pipeline</button>
+        <button class="qa-btn" onclick="ghlChat('What are the key GHL dashboard metrics I should be tracking?')"><span class="qa-icon">◉</span>Review Dashboard</button>
+        <button class="qa-btn" onclick="ghlChat('How do I connect Facebook ads to GHL so leads auto-populate in my CRM?')"><span class="qa-icon">◈</span>Connect Facebook Ads</button>
+      </div>
+      <div class="crm-tools">
+        <div class="crm-tool"><div class="crm-tool-name">GHL Dashboard</div><div class="crm-tool-desc">Access your live CRM dashboard, contacts, and pipeline overview</div><a href="https://crm.aiforbusiness.com/v2/location/vyIwWsqa2Kwb1lN0Mg8Z/dashboard" class="crm-link" target="_blank">Open Dashboard ↗</a></div>
+        <div class="crm-tool"><div class="crm-tool-name">Client Portal</div><div class="crm-tool-desc">Access your client-facing portal, no password required</div><a href="https://vyiwwsqa2kwb1ln0mg8z.app.clientclub.net/" class="crm-link" target="_blank">Open Portal ↗</a></div>
+        <div class="crm-tool"><div class="crm-tool-name">Help Library</div><div class="crm-tool-desc">Full articles and guides for the AI4B CRM platform</div><a href="https://help.aiforbusiness.com/" class="crm-link" target="_blank">Open Help ↗</a></div>
+        <div class="crm-tool"><div class="crm-tool-name">QuickStart Guide</div><div class="crm-tool-desc">Step-by-step getting started guide for GHL</div><a href="https://help.aiforbusiness.com/course/zeZe2lY018YssmSxGqb8?preview=true" class="crm-link" target="_blank">Open Guide ↗</a></div>
+      </div>
+      <div class="workspace">
+        <div class="workspace-header"><div class="agent-icon green" style="width:28px;height:28px;font-size:14px;">▣</div><div class="workspace-title">GHL Agent</div><div class="agent-badge badge-ready" style="margin-left:auto;">Online</div></div>
+        <div class="workspace-body">
+          <div class="chat-messages" id="ghl-messages">
+            <div class="message agent"><div class="msg-avatar agent">G</div><div class="msg-bubble">Hey Joe, I'm your GHL Agent. I've studied the full AI4B CRM training. Ask me anything about GoHighLevel or pick a quick action above.</div></div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="ghl-input" placeholder="Ask about GHL, funnels, contacts, automations..." onkeydown="if(event.key==='Enter')sendGHL()">
+            <button class="send-btn" onclick="sendGHL()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="panel-content">
+      <div class="page-header"><div class="page-title">Content Agent</div><div class="page-subtitle">AI-powered content creation using AI4B prompting frameworks</div></div>
+      <div class="content-form">
+        <div class="form-row">
+          <div class="form-group"><div class="form-label">Platform</div>
+            <select class="form-select" id="content-platform">
+              <option value="facebook">Facebook Post</option>
+              <option value="linkedin">LinkedIn Post</option>
+              <option value="email">Email Subject Lines</option>
+              <option value="ad">Ad Copy</option>
+              <option value="landing">Landing Page Copy</option>
+            </select>
+          </div>
+          <div class="form-group"><div class="form-label">Framework</div>
+            <select class="form-select" id="content-framework">
+              <option value="aida">AIDA (Awareness to Action)</option>
+              <option value="pas">PAS (Problem-Agitate-Solution)</option>
+              <option value="story">Story - Hook - CTA</option>
+              <option value="value">Value Bomb Post</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full"><div class="form-label">Topic / Offer</div>
+            <input type="text" class="form-input" id="content-topic" placeholder="e.g. AI tools for business owners over 40, painting service in Carmel NY...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full"><div class="form-label">Additional Context (optional)</div>
+            <textarea class="form-textarea" id="content-context" placeholder="Any specific angle, audience notes, tone preferences..."></textarea>
+          </div>
+        </div>
+        <button class="generate-btn" onclick="generateContent()">Generate Content →</button>
+        <div class="output-area loading" id="content-output">Content will appear here after you click Generate...</div>
+      </div>
+    </div>
+    <div class="panel" id="panel-email">
+      <div class="page-header"><div class="page-title">Email Sequence Agent</div><div class="page-subtitle">Build automated email sequences tied to your GHL funnels</div></div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="emailChat('Write a 5-email welcome sequence for a new lead who opted in for an AI tools guide. Warm, casual tone, builds trust before pitching.')"><span class="qa-icon">✉</span>Welcome Sequence</button>
+        <button class="qa-btn" onclick="emailChat('Write a 3-email follow-up sequence for someone who visited a sales page but did not buy. Address objections, add urgency.')"><span class="qa-icon">↺</span>Follow-Up Sequence</button>
+        <button class="qa-btn" onclick="emailChat('Write a nurture email for my list about AI tools for business. Provide value, no hard sell, ends with a soft CTA.')"><span class="qa-icon">◉</span>Nurture Email</button>
+        <button class="qa-btn" onclick="emailChat('Write a re-engagement email for cold subscribers who have not opened in 60 days.')"><span class="qa-icon">⚡</span>Re-Engagement</button>
+        <button class="qa-btn" onclick="emailChat('Write a broadcast email announcing a new offer. Use scarcity and social proof. Keep it short and punchy.')"><span class="qa-icon">✦</span>Broadcast Email</button>
+        <button class="qa-btn" onclick="emailChat('Write 5 subject line variations for a cold email about AI business tools.')"><span class="qa-icon">✎</span>Subject Lines</button>
+      </div>
+      <div class="workspace">
+        <div class="workspace-header"><div class="agent-icon orange" style="width:28px;height:28px;font-size:14px;">◎</div><div class="workspace-title">Email Agent</div><div class="agent-badge badge-ready" style="margin-left:auto;">Online</div></div>
+        <div class="workspace-body">
+          <div class="chat-messages" id="email-messages">
+            <div class="message agent"><div class="msg-avatar agent">E</div><div class="msg-bubble">Hey Joe, I'm your Email Sequence Agent. Tell me what sequence you need or hit a quick action above.</div></div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="email-input" placeholder="Describe the email or sequence you need..." onkeydown="if(event.key==='Enter')sendEmail()">
+            <button class="send-btn" onclick="sendEmail()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="panel-closebot">
+      <div class="page-header"><div class="page-title">CloseBot Agent</div><div class="page-subtitle">Write and optimize CloseBot prompts using the AI4B chatbot frameworks</div></div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="closebotChat('Write a CloseBot general prompt for Social Mingle Agency that qualifies small business owners. Friendly, conversational, not robotic.')"><span class="qa-icon">◈</span>General Prompt</button>
+        <button class="qa-btn" onclick="closebotChat('Write prioritized objectives for a CloseBot that qualifies leads, gathers their biggest challenge, and books a discovery call.')"><span class="qa-icon">▣</span>Write Objectives</button>
+        <button class="qa-btn" onclick="closebotChat('How do I use prompt stacking to make my bot feel more natural and stop losing leads early?')"><span class="qa-icon">⚡</span>Prompt Stacking</button>
+        <button class="qa-btn" onclick="closebotChat('Write a CloseBot prompt for a painting service in Carmel NY. Goal: qualify job scope and book an estimate call.')"><span class="qa-icon">✦</span>Painting Bot Prompt</button>
+        <button class="qa-btn" onclick="closebotChat('What sensitivity setting should I use for my lead qualification bot and why?')"><span class="qa-icon">◉</span>Sensitivity Settings</button>
+        <button class="qa-btn" onclick="closebotChat('Give me a checklist for testing my CloseBot before going live.')"><span class="qa-icon">✎</span>Testing Checklist</button>
+      </div>
+      <div class="workspace">
+        <div class="workspace-header"><div class="agent-icon gold" style="width:28px;height:28px;font-size:14px;">◈</div><div class="workspace-title">CloseBot Agent</div><div class="agent-badge badge-setup" style="margin-left:auto;">Online</div></div>
+        <div class="workspace-body">
+          <div class="chat-messages" id="closebot-messages">
+            <div class="message agent"><div class="msg-avatar agent">C</div><div class="msg-bubble">Hey Joe, I'm your CloseBot Agent. Tell me what you need built or optimized and let's get your bot converting.</div></div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="closebot-input" placeholder="Ask about CloseBot prompts, objectives, optimization..." onkeydown="if(event.key==='Enter')sendClosebot()">
+            <button class="send-btn" onclick="sendClosebot()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const FUNCTION_URL = '/.netlify/functions/claude';
+const AI4B_SYSTEM = `You are a specialized AI4B Work Agent with deep knowledge of the AI4B PRO training program. You have studied all 52 extracted lessons including LVL 1 AI Prompting, LVL 2 Business Research, LVL 8 Funnel Building (AIDA, PAS, psychology triggers), LVL 9 Lead Generation (LinkedIn, newsletters, Beehiiv), LVL 10 Virtual Assistants, LVL 11 CloseBot chatbots (general prompts, objectives, prompt stacking, sensitivity settings), LVL 12 App Development, and the AI Starter Kit. GHL Location ID: vyIwWsqa2Kwb1lN0Mg8Z. Joe's businesses: Social Mingle Agency (social media marketing), WeTakePrideInOurPainting.com (painting, Carmel NY), FitAndCrafty.com (AI and fitness 40+), WebSentry (website security). Be direct, practical, plain English, short paragraphs, copy-paste ready outputs.`;
+function buildSystem(type) {
+  const extras = {
+    ghl: '\n\nRole: GHL/CRM Agent. Focus on GoHighLevel — contacts, pipelines, automations, funnels. Step-by-step instructions specific to GHL interface.',
+    email: '\n\nRole: Email Sequence Agent. Write complete copy-paste ready emails using AIDA, PAS, scarcity, social proof. Match Joe\'s direct casual voice.',
+    closebot: '\n\nRole: CloseBot Agent. Write general prompts (personality/tone) and numbered objectives. Critical: build rapport BEFORE asking for contact info. Use prompt stacking.',
+    content: '\n\nRole: Content Agent. Facebook rules: I statement hook, 4th grade reading level, casual/informal, no emojis, no money words (use moolah/cheddar/gains), occasional intentional misspelling.'
+  };
+  return AI4B_SYSTEM + (extras[type] || '');
+}
+const histories = { ghl: [], email: [], closebot: [] };
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (el && el.classList) el.classList.add('active');
+}
+function addMessage(containerId, role, text) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'message ' + (role === 'user' ? 'user' : 'agent');
+  div.innerHTML = `<div class="msg-avatar ${role === 'user' ? 'user-av' : 'agent'}">${role === 'user' ? 'JO' : containerId.charAt(0).toUpperCase()}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function addTyping(containerId) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'message agent';
+  div.id = 'typing-' + containerId;
+  div.innerHTML = `<div class="msg-avatar agent">${containerId.charAt(0).toUpperCase()}</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function removeTyping(containerId) { const el = document.getElementById('typing-' + containerId); if (el) el.remove(); }
+async function callAPI(system, messages) {
+  const response = await fetch(FUNCTION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system, messages })
+  });
+  const data = await response.json();
+  return data.content?.[0]?.text || 'Something went wrong. Try again.';
+}
+async function sendChat(agentType, inputId, messagesId) {
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMessage(messagesId, 'user', text);
+  histories[agentType].push({ role: 'user', content: text });
+  addTyping(messagesId);
+  try {
+    const reply = await callAPI(buildSystem(agentType), histories[agentType]);
+    removeTyping(messagesId);
+    addMessage(messagesId, 'agent', reply);
+    histories[agentType].push({ role: 'assistant', content: reply });
+  } catch(e) {
+    removeTyping(messagesId);
+    addMessage(messagesId, 'agent', 'Connection error. Try again.');
+  }
+}
+function sendGHL() { sendChat('ghl', 'ghl-input', 'ghl-messages'); }
+function sendEmail() { sendChat('email', 'email-input', 'email-messages'); }
+function sendClosebot() { sendChat('closebot', 'closebot-input', 'closebot-messages'); }
+function ghlChat(msg) { showPanel('ghl', null); document.getElementById('ghl-input').value = msg; sendGHL(); }
+function emailChat(msg) { showPanel('email', null); document.getElementById('email-input').value = msg; sendEmail(); }
+function closebotChat(msg) { showPanel('closebot', null); document.getElementById('closebot-input').value = msg; sendClosebot(); }
+async function generateContent() {
+  const platform = document.getElementById('content-platform').value;
+  const framework = document.getElementById('content-framework').value;
+  const topic = document.getElementById('content-topic').value.trim();
+  const context = document.getElementById('content-context').value.trim();
+  const output = document.getElementById('content-output');
+  if (!topic) { output.textContent = 'Please enter a topic first.'; output.className = 'output-area loading'; return; }
+  output.textContent = 'Generating...'; output.className = 'output-area loading';
+  const fwMap = { aida:'AIDA', pas:'PAS (Problem, Agitate, Solution)', story:'Story to Hook to CTA', value:'Value Bomb' };
+  const plMap = { facebook:'Facebook post', linkedin:'LinkedIn post', email:'5 email subject lines', ad:'Ad copy', landing:'Landing page copy' };
+  const prompt = `Write ${plMap[platform]} about: ${topic}. Framework: ${fwMap[framework]}. ${context ? 'Context: ' + context : ''} ${platform === 'facebook' ? 'Rules: I statement hook, 4th grade level, casual/informal, no emojis, no money words (use moolah/cheddar/gains), occasional intentional misspelling.' : ''} Provide complete copy-paste ready output.`;
+  try {
+    const result = await callAPI(buildSystem('content'), [{ role: 'user', content: prompt }]);
+    output.textContent = result; output.className = 'output-area';
+  } catch(e) { output.textContent = 'Error. Try again.'; output.className = 'output-area loading'; }
+}
+</script>
+</body>
+</html>
